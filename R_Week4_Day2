@@ -1,0 +1,43 @@
+# load data and create data frame
+library(datasets)
+data_set<- read.csv('C:\\Users\\LENOVO\\Desktop\\SDA_DSB\\deck.csv',header = TRUE)
+#View(data_set)
+#View(df)
+df<-data.frame(data_set)
+
+# print statement
+statement1<- "Player 1 Cards"
+statement1
+
+#call deal function for player 1 with 3 arguments (data frame , number of players , number of cards)
+player_1<- deal(df,2,5)
+player_1
+
+# print statement
+statement2<- "Player 2 Cards"
+statement2
+
+# delete player 1 cards from data frame 
+df2 <- df[!df %in% player_1,]
+
+#call deal function for player 2 with 3 arguments (data frame , number of players , number of cards)
+player_2<- deal(df2,2,5)
+player_2
+
+# create shuffle function
+shuffle<- function(df,x){
+  p1<-sample(nrow(df),x,replace = FALSE) # get random 5 numbers between 1-52 
+  player_cards <- df[p1,] # take the rows corresponding to the random numbers and save
+  return(player_cards) # return the rows
+}
+
+deal<- function(df,z,y){
+  if (z * y > nrow(df)) {# check that the cards is enough by (players *  cards) comparing it with the total number of cards
+    statement3<- "not enough cards" # if it greater than total print statement
+    statement3
+  } else {
+    shuffle_deck<- shuffle(df,y) # if it less or equal call shuffle function with 2 arguments (data frame, number of cards)
+    return(shuffle_deck) # return the rows
+  }
+  
+}
