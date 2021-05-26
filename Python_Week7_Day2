@@ -1,0 +1,53 @@
+import numpy as np
+#1
+v1=np.array([[3,5],
+            [7,-5]])
+v2=np.array([6,9])
+x = np.linalg.solve(v1, v2)
+x
+#2
+array([1.5, 0.3])
+v3=np.array([[1,1,1],
+            [0,1,1],
+            [2,5,-1]])
+v4=np.array([6,-4,27])
+x1 = np.linalg.solve(v3, v4)
+x1
+#3
+array([10. ,  0.5, -4.5])
+v5=np.array([[1,1],
+            [2,2]])
+v6=np.array([4,8])
+x2 = np.linalg.solve(v5, v6)
+x2
+#Error becuse ([[1,1],[2,2]]) is a Singular matrix which does not has inverse.
+
+#print number between 1 to 100
+[x for x in range(2,100)]
+#print number between 1 to 100 divisible by 8
+[x for x in range(2,100) if x%8==0]
+# print first 20 number divisible by 5
+count=0
+num=1
+while(count<20):
+    if(num%5==0):
+        print(num)
+        count+=1
+    num+=1
+#def return number is prime or no
+def isprime(n):
+    if n>=0 and n<=100:
+        devs=0
+        for x in range(1,n):
+            if n%x==0:
+                devs+=1
+        if devs<2:
+            return(True)
+        else:
+            return(False)
+    else:
+        return("number must between 0 and 100")
+
+print(isprime(13))
+print(isprime(100))
+print(isprime(101))
