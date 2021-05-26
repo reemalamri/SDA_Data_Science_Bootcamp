@@ -1,0 +1,95 @@
+# Potential Questions to Answer:
+# 1. Create snacks that the customers can buy and randomize who buys which snack
+# 2. Pretend you own multiple theaters and run two simulations to represent each theater and plot the results
+# 3. Create conditional statements for movies that may be PG-13 and children are not allowed to watch
+# Cost for adults and children
+ticket_cost <- 30
+ticket_cost_child <- 20 
+movies <- vector(mode="list", length=5)# List 5 of your favorite movies
+names(movies) <- c('Hamilton', 'Da 5 Bloods', 'The Invisible Man', 'The Vast of Night', 'The Assistant')
+movies[[1]] <- 12; movies[[2]] <- 13; movies[[3]] <- 18; movies[[4]] <- 6; movies[[5]] <- 20
+screens <- 5# How many screens does the theater have? (assume 1 per movie)
+seats <- 45 # How many seats does each theater hold
+snack <- 25 #the snack value
+total_snack_Days<-0 # calculate total revenue of snacks for each day 
+total_Days<-0 # calculate total revenue of tickets and snacks for each day 
+week_days <- c()  # Store totals for each day
+Revenue_snack_days <- c()# Store totals for each day for snack 
+Total_Revenue_tickets<-c() #store the total revenue for ticket for whole screen in each day
+Total_snack<-c() #store the total for snack for whole screen in each day
+Days<- c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday")
+options(warn=-1)
+# iterate through the week
+for (i in 1:7) {
+  # Keep track of total revenue for the day
+  # iterate through the amount of screens on a particular day
+  for (p in 1:screens ) {
+    # Calculate  how many adults and children are watching the movie
+    visitors_adults <- sample(seats, 1)
+    # Calculate  how many adults are buying the snack
+    visitors_adults_snack<- sample(visitors_adults,1)
+    if(movies[[p]]<13){
+    # Calculate  how many children are watching the movie
+    visitors_children <- sample((seats-visitors_adults),1)
+    # Calculate  how many children are buying the snack
+    visitors_children_snack<- sample(visitors_children,1)
+    # Calculate the revenue for adults and children for ticket
+    revenue<-(visitors_adults*ticket_cost)+(visitors_children*ticket_cost_child)
+    # Calculate the total snacks for adults and children 
+    snack_total <-(visitors_adults_snack*snack)+(visitors_children_snack*snack)
+    
+    }
+    else 
+    {
+      # Calculate the revenue for adults  for ticket
+      revenue<-(visitors_adults*ticket_cost)
+      # Calculate the total snacks for adults and children 
+      snack_total <-(visitors_adults_snack*snack)
+    }
+    Total_snack[p]<-c(snack_total)
+    Total_Revenue_tickets[p]<-c(revenue)
+    # Calculate snack, and add to running total for the day
+    total_snack_Days<total_snack_Days+Total_snack[[p]]
+    # Calculate revenue, and add to running total for the day
+    total_Days<-total_Days+Total_Revenue_tickets[[p]]+Total_snack[[p]]
+  }
+  # Save total to the corresponding day
+  week_days[i]<-total_Days 
+  # Save total snack to the corresponding day
+  Revenue_snack_days[i]<-Total_snack 
+  #print(total revenue and snack for each day )
+  cat("Day",i,"Total Revenue is:",week_days[i],"and Total snack is:",Revenue_snack_days[i],"\n")
+  
+  total_snack_Days<-0
+  total_Days<-0
+}
+# Which day had the highest revenue?
+cat("The Highest Revenue is",max(week_days),"$ in Day",which(max(week_days)==week_days),"\n")
+# Which day had the highest buy of snack?
+cat("The Highest Revenue of Snack is",max(Revenue_snack_days),"$ in Day",which(max(Revenue_snack_days)==Revenue_snack_days),"\n")
+
+# Make a barchart showing total revenue per day
+barplot(unlist(week_days), 
+        xlab="Days",ylab="Total Revenue",names.arg = Days,
+        main="Total Revenue per Day ",border="gray",
+        col =hsv(0.6, .80, seq(.9,.30,length.out = 7)))
+# Make a barchart showing total revenue of snack per day
+barplot(unlist(Revenue_snack_days), 
+        xlab="Days",ylab="Total Revenue",names.arg = Days,
+        main="Total Revenue of Snack per Day ",border="gray",
+        col =hsv(0.6, .80, seq(.9,.30,length.out = 7)),
+        horiz = TRUE)
+#chart for Revenue_Percentages per week
+#Calculate the percentage of income from snacks and movies.
+Revenue_Percentages<-c()
+#Calculate the percentage of income from snacks (snack/total*100).
+Revenue_Percentages[1]<- c(round(sum(Revenue_snack_days)/sum(week_days)*100))
+#Calculate the percentage of income from movies ((total-snack)/total*100).
+Revenue_Percentages[2]<-c(round((sum(week_days)-sum(Revenue_snack_days))/sum(week_days)*100))
+#Show the percentage of income from snacks and movies in pie chart.
+lbls<-c("Snacks","Tickets")
+pie(Revenue_Percentages,
+    labels=paste(lbls," ",Revenue_Percentages,"%"),
+    border="white",
+    col =hsv(0.6, .80, seq(.9,.50,length.out = 2)),
+    main=paste("Pie Chart of Revenue Percentages for a week"))
