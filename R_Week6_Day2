@@ -1,0 +1,24 @@
+
+outdoors<- c(100,0)
+porch<- c(90,20)
+indoors<- c(40,50)
+place
+pre_sun<-0
+pre_rain<-0
+result<-c()
+pre_rsult<- function(place,x,y){
+  return (((place[1]*x)+(place[2]*y)))
+}
+decision_tree<- function(outdoors,porch,indoors,x,y){
+  result[1]<- c(pre_rsult(outdoors,x,y))
+  result[2]<- c(pre_rsult(porch,x,y))
+  result[3]<- c(pre_rsult(indoors,x,y))
+  max_result<- which(result == max(result))
+  return(switch(  
+    max_result,  
+    "outdoors",  
+    "porch", 
+    "indoors"))
+}
+decision_tree(outdoors,porch,indoors,0.4,0.6)
+
