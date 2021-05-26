@@ -1,0 +1,208 @@
+library(rsconnect)
+library(DataExplorer)
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(scales)
+library(ggpubr)
+library(shiny)
+library(shinydashboard)
+library(shinythemes)
+
+# load data
+load(file = "data_project6.Rdata")
+
+#start shiny UI
+ui <- fluidPage(
+  theme = shinytheme("superhero"),# select theme
+  titlePanel(h1("London Air Pollution Rates Dashboard",align="center")),# add titel
+  
+  br(),# line space
+  
+# start new column for add values
+  column(6,offset =3,fluidRow(
+    valueBoxOutput("count1"),
+    valueBoxOutput("count2"),
+    valueBoxOutput("count3"),height = "80px",width = "250px")),
+  
+  br(),
+  br(),
+# start new row and box for Filters  
+  fluidRow(
+    box(title = h2("Filters"),
+        fluidRow(
+          #new column for site filter
+          column(3,selectInput(inputId="site",
+                               label=h4("Choose a site"),
+                               choices=c("Walbrook_Wharf"="CT6",
+                                         "Mil_End_Road"="TH2",
+                                         "Newham_Wren"="NM3",
+                                         "North_Ken"="KC1"),
+                               multiple = TRUE,
+                               selected = "CT6",
+                               selectize = TRUE)),
+          #new column for species filter
+          column(3,checkboxGroupInput(inputId = "species", 
+                                      label =h4("Choose a species"), 
+                                      c("CO" = "CO", 
+                                        "NO" = "NO", 
+                                        "NOX" = "NOX"),
+                                      selected = "NO",
+                                      inline = TRUE
+                                      ))),
+        # start new row to print " You should selected at lest one site" .
+        fluidRow(
+          textOutput("null_v")
+          ))),
+  
+  br(),
+  
+  fluidRow(
+    box(column(12,plotOutput("sites",
+                             height = "600px",
+                             width = "700px"))),
+    box(column(12,plotOutput("allsite",
+                             height = "600px",
+                             width = "700px"))),
+    ),
+  
+  br(),
+  
+  fluidRow(
+    box(title = h2("Filters"),
+        fluidRow(
+          column(3,sliderInput(inputId="year", 
+                               label=h4("Choose a year"), 
+                               value=2010, 
+                               min=2010,
+                               max=2014),
+                 ),
+          column(3,sliderInput(inputId="month", 
+                               label=h4("Choose a month"),
+                               value=3,
+                               min=1,
+                               max=12),
+                 )
+          )
+        )
+    ),
+  
+  br(),
+# start new row for plots  
+  fluidRow(
+    # start new box and column for plot.      
+    box(column(12,plotOutput("Year_c",
+                             height = "600px",
+                             width = "700px"))),
+    box(column(12,plotOutput("Month",
+                             height = "600px",
+                             width = "700px"))), 
+    )
+)# end UI
+
+
+#start shiny server
+server <- function(input, output, session) {
+  
+  output$sites <- renderPlot({
+    # check if user select at lest one site
+    if (is.null(input$site)){
+      # print help text 
+      output$null_v <- renderText({ 
+        " You should selected at lest one site"})
+    }else{
+      name <- c(input$site)  
+      title <- paste(c("pollution rates in sites:",name,"per year"), collapse=" ")
+      # filter and plot of Site and species for the first chart.
+      data_after_clean %>% 
+        filter(Site ==input$site,Species==input$species)%>%
+        ggplot()+
+        geom_col(mapping=aes(x =year(ReadingDateTime) ,y =Value ,fill = Species), position = "dodge")+
+        scale_fill_manual(values=c("#165CAA","#276DC2","#BFC2C5"))+
+        xlab("Years")+
+        labs(title=title)
+      }
+    })
+  
+  output$allsite <- renderPlot({
+    if (is.null(input$site)){
+      return(NULL)}
+    else{
+      name <- c(input$site)
+      # filter and plot of Site for the second chart.
+      data_after_clean %>%
+        filter(Site ==input$site) %>%
+        group_by(Site,year(ReadingDateTime)) %>%
+        mutate(Value =mean(Value))%>%
+        ggplot(mapping= aes( x = year(ReadingDateTime),y = Value,color=Site))+
+        xlab("Years")+
+        ggtitle(paste(c("The average of pollution rates with all species in sites:",name,"per year"), collapse=" "),)+
+        geom_line()
+    }
+  })
+  
+  output$Year_c <- renderPlot({
+    if (is.null(input$site)){
+      return(NULL)}
+    else{
+      name <- c(input$site)
+      # filter and plot of Site, year and species for the third chart.
+      data_after_clean %>%
+        filter(Site ==input$site,year(ReadingDateTime)==input$year,Species==input$species)%>%
+        ggplot()+
+        geom_col(mapping=aes(x =ReadingDateTime,y =Value ,fill = Species))+
+        scale_fill_manual(values=c("#165CAA","#276DC2","#BFC2C5"))+
+        xlab("Months")+
+        coord_flip()+
+        scale_x_date(date_breaks="1 month",date_labels=" %m") + 
+        ggtitle(paste(c("pollution rates in sites:",name,"within",input$year,"per month"), collapse=" "),)
+      }
+    })
+  
+  output$Month <- renderPlot({
+    if (is.null(input$site)){
+      return(NULL)}
+    else{
+      # filter and plot of Site, year,month and species for the forth chart.
+      data_after_clean %>%
+        filter(Site ==input$site,year(ReadingDateTime)==input$year,month(ReadingDateTime)==input$month,Species==input$species)%>%
+        ggplot()+
+        geom_col(mapping=aes(x =ReadingDateTime ,y =Value , fill = Species))+
+        scale_fill_manual(values=c("#165CAA","#276DC2","#BFC2C5"))+
+        xlab("Days")+
+        scale_x_date(date_breaks="1 day",date_labels=" %d") + 
+        ggtitle(paste(" pollution rates within ",input$month,"/",input$year, "per day"))
+      }
+    })
+  
+
+  output$count1 <- renderValueBox({
+    # add value box for Total Sites.
+    valueBox(
+      titlePanel(h2("Total Sites",align="center")),
+      titlePanel(h3(length(unique(data_after_clean$Site)),align="center"))
+    )
+  })
+  
+  output$count2 <- renderValueBox({
+    # add value box for Total Years.
+    valueBox(
+      titlePanel(h2("Total Years",align="center")),
+      titlePanel(h3( length(unique(year(data_after_clean$ReadingDateTime))),align="center")))
+    
+  })
+  
+  output$count3 <- renderValueBox({
+    # add value box for Total Values.
+    valueBox(
+      titlePanel(h2("Total Values",align="center")),
+      titlePanel(h3(sum(round(data_after_clean$Value,2)),align="center"))
+    )
+  })
+}# end server
+
+
+shinyApp(ui, server)
+
+
+
