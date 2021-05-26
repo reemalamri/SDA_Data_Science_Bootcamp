@@ -1,0 +1,73 @@
+install.packages("lpSolve")
+library(lpSolve)
+
+# Look at the docs
+?lp
+
+# Objective Function Constraints
+obj_coeff <- c(13, 23, 30) # Thanks Buthaina, Mashael, Atheer and Zarah
+
+# Constraint Coefficients
+constraints <- matrix(
+  c(5,15,30,
+    4,4,10,
+    35,20,15,
+    5,10,20
+  ), nrow=4, byrow=TRUE
+)
+
+direction_c <- c("<=",
+                 "<=",
+                 "<=",
+                 "<=")
+#880 is hours work per month by (5 employees)*(8 full_time hours)*(22 days in month)
+resources <- c(480, 
+               160, 
+               1190,
+               880)
+
+# Create out linear program
+solve_lp <- lp(
+  "max",
+  obj_coeff,
+  constraints,
+  direction_c,
+  resources,
+  compute.sens =TRUE
+)
+
+# Get the max profit
+solve_lp$objval
+
+# Best values
+solve_lp$solution
+
+# Markov Chains
+
+install.packages("expm")
+library(expm)
+
+T <- matrix(c(
+  0.05, 0.90, 0.05,0,
+  0.75, 0.2, 0.05,0,
+  0.2, 0.55, 0.2, 0.05,
+  0.2, 0.55, 0.2, 0.05
+), nrow=4, byrow = TRUE)
+
+#reduce the probability of go state 0 to 0.
+# Column names
+colnames(T) <- c(0,1,2,3)
+rownames(T) <- c(0,1,2,3)
+
+T
+
+# Where will end up in different time periods from now
+T%^%5
+
+T%^%2
+
+# over 13 become Steady state occurs when we no longer see change in our values
+T%^%13
+
+# Starting State = Rows
+# Ending state = columns
