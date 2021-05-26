@@ -1,0 +1,276 @@
+library("tidyverse")
+#12.2.1 Exercises
+
+#Using prose, describe how the variables and observations are organised in each of the sample tables.
+  #table 1
+  #rows "observations" represent contain of (country, year,cases, population) columns. 
+  #columns "variables" contain values for each variables
+  #table 2
+  #ows "observations" represent contain of (country, year, type, count) columns. 
+  #columns "variables" contain values for each variables.
+  #count represent number of (cases, population) that represent in (type).
+  #table 3
+  #rows "observations" (country, year, rate). 
+  #columns "variables" contain values for each variable.
+  #rate represent number of (cases)/number of (population)
+  #table 4
+    #table 4a
+    #rows "observations" represent values of (cases) in 1999 and 2000. 
+    #columns "variables" represent (year) and has value.
+    #table 4b
+    #rows "observations" represent values of (population) in 1999 and 2000. 
+    #columns "variables" represent (year) and has value.
+#---------
+
+#Compute the rate for table2, and table4a + table4b. You will need to perform four operations:
+  #for table2
+  table2
+  #cases
+  cases_table2 <- filter(table2, type == "cases") 
+  cases_table2
+  #population
+  population_table2 <- filter(table2, type == "population") 
+  population_table2
+  #rate
+  rate_table2 <- tibble(country = cases_table2$country,
+                        year = cases_table2$year,
+                        rate = cases_table2$count/population_table2$count * 10000)
+  
+  rate_table2
+  #for table4a + table4b
+  table4a
+  table4b
+  #rate_1999
+  rate_1999 <- tibble(country = table4a$country,
+                            year = 1999,
+                            rate = table4a$'1999' / table4b$'1999' * 10000)
+  
+  rate_1999
+  #rate_2000
+  rate_2000 <- tibble(country = table4a$country,
+                             year = 2000,
+                             rate = table4a$'2000' / table4b$'2000' * 10000)
+  rate_2000
+  # make rate_1999 and rate_2000 to gather
+  rate_table4 <- rbind(rate_1999, rate_2000) %>% 
+    arrange(country)
+  
+  rate_table4
+#Which representation is easiest to work with? Which is hardest? Why?
+#I think both easy. maybe because I dealt a lot with the columns, not with tables.
+#---------
+  
+#Recreate the plot showing change in cases over time using table2 instead of table1.
+  #What do you need to do first?
+  # we should filter table to only include (cases) rows.
+  #plot
+  table2 %>%
+    filter(type == "cases") %>%
+    ggplot(aes(year, count)) +
+    geom_line(aes(group = country)) +
+    ylab("cases")
+#---------
+  
+#--------------------------------------
+  
+#12.3.3 Exercises
+#Why are pivot_longer() and pivot_wider() not perfectly symmetrical?
+    #Carefully consider the following example:
+    
+    stocks <- tibble(
+      year   = c(2015, 2015, 2016, 2016),
+      half  = c(   1,    2,     1,    2),
+      return = c(1.88, 0.59, 0.92, 0.17)
+    )
+  stocks %>% 
+    pivot_wider(names_from = year, values_from = return) %>% 
+    pivot_longer(`2015`:`2016`, names_to = "year", values_to = "return")
+  #pivot_wider
+  stocks %>% 
+    pivot_wider(names_from = year, values_from = return)
+  # we can not run pivot_longe only becuse is depend on pivot_wider
+#pivot_longer() has a names_ptypes argument, e.g.  names_ptypes = list(year = double()). What does it do?
+  stocks %>% 
+    pivot_wider(names_from = year, values_from = return) %>% 
+    pivot_longer(`2015`:`2016`, names_to = "year", values_to = "return",
+                 names_ptypes = list(year = double()))
+  #Error: Can't convert <character> to <double>.
+  stocks %>%
+    pivot_wider(names_from = year, values_from = return)%>%
+    pivot_longer(`2015`:`2016`, names_to = "year", values_to = "return",
+                 names_transform = list(year = as.numeric))
+  
+#---------
+  
+#Why does this code fail?
+  table4a
+    table4a %>% 
+    pivot_longer(c(1999, 2000), names_to = "year", values_to = "cases")
+  #Error: Can't subset columns that don't exist.
+  #x Locations 1999 and 2000 don't exist.
+  #There are only 3 columns.
+  #becuse 1999 and 2000 are string not number
+    table4a %>% 
+      pivot_longer(c('1999', '2000'), names_to = "year", values_to = "cases")
+#---------
+
+#What would happen if you widen this table? Why? How could you add a new column to uniquely identify each value?
+    
+    people <- tribble(
+      ~name,             ~names,  ~values,
+      #-----------------|--------|------
+      "Phillip Woods",   "age",       45,
+      "Phillip Woods",   "height",   186,
+      "Phillip Woods",   "age",       50,
+      "Jessica Cordero", "age",       37,
+      "Jessica Cordero", "height",   156
+    )
+    people
+    # by using pivot_wider()
+    people %>%
+      pivot_wider(names_from = names, values_from = values)
+    ## Warning: Values in `values` are not uniquely identified; output will contain list-cols.
+    ## * Use `values_fn = list(values = list)` to suppress this warning.
+    ## * Use `values_fn = list(values = length)` to identify where the duplicates arise
+    ## * Use `values_fn = list(values = summary_fun)` to summarise duplicates
+#--------
+    
+#Tidy the simple tibble below. Do you need to make it wider or longer? What are the variables?
+    
+    preg <- tribble(
+      ~pregnant, ~male, ~female,
+      "yes",     NA,    10,
+      "no",      20,    12
+    )
+    #make the table longer
+    preg %>%
+      pivot_longer(c('male', 'female'), names_to = "sex", values_to = "count")
+    #variables are (pregnant, sex, count)
+#--------
+  
+#-------------------------
+    
+#12.4.3 Exercises
+#What do the extra and fill arguments do in separate()? 
+#Experiment with the various options for the following two toy datasets.
+    
+    tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+      separate(x, c("one", "two", "three"))
+    
+    tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+      separate(x, c("one", "two", "three"))
+    ?separate
+    #extra	
+    #If sep is a character vector, this controls what happens when there are too many pieces
+    #fill	
+    #If sep is a character vector, this controls what happens when there are not enough pieces
+    #extra = 'drop'
+    tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+      separate(x, c("one", "two", "three"), extra = 'drop')
+    #extra = 'merge'
+    tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+      separate(x, c("one", "two", "three"), extra = 'merge')
+    #extra = 'warn'
+    tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+      separate(x, c("one", "two", "three"), extra = 'warn')
+    #fill = 'right'
+    tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+      separate(x, c("one", "two", "three"), fill = 'right')
+    #fill = 'left'
+    tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+      separate(x, c("one", "two", "three"), fill = 'left')
+    #fill = 'warn'
+    tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+      separate(x, c("one", "two", "three"), fill = 'warn')
+#-----------
+    
+#Both unite() and separate() have a remove argument. What does it do? Why would you set it to FALSE?
+ # If TRUE, remove input column from output data frame.
+    table3 %>% 
+      separate(year, into = c("century", "year"), sep = 2, remove = TRUE)
+    table3 %>% 
+      separate(year, into = c("century", "year"), sep = 2, remove = FALSE)
+    #old columns retained in the output
+#---------
+    
+#Compare and contrast separate() and extract(). Why are there three variations of separation (by position, by separator, and with groups), but only one unite?
+  ?separate
+  ?extrac 
+ 
+#-----------
+
+#-----------------------------------------
+    
+#12.5.1 Exercises
+#Compare and contrast the fill arguments to pivot_wider() and complete().
+    ?pivot_wider
+    # replace NA
+    ?complete
+    #get a single value to NA 
+    
+#What does the direction argument to fill() do?
+    #direction determines whether NA values state and has two values(down,up)
+    #replaced by the previous non-missing value ("down") 
+    #next non-missing value ("up").
+    
+#-----------
+#-------------------------------
+#12.6.1 Exercises
+    who
+    (who1 <- who %>% 
+        gather(new_sp_m014:newrel_f65, key = "key", value = "cases", na.rm = TRUE))
+    (who2 <- who1 %>% 
+        mutate(key = stringr::str_replace(key, "newrel", "new_rel")))
+    (who3 <- who2 %>% 
+        separate(key, c("new", "type", "sexage"), sep = "_"))
+    (who4 <- who3 %>% 
+        select(-new, -iso2, -iso3))
+    (who5 <- who4 %>% 
+        separate(sexage, c("sex", "age"), sep = 1))
+    
+#In this case study I set values_drop_na = TRUE just to make it easier to check that we had the correct values. 
+    #Is this reasonable? Think about how missing values are represented in this dataset.
+    #Are there implicit missing values? What’s the difference between an NA and zero?
+    who1 %>%
+      filter(cases == 0) %>%
+      nrow()
+    # yes
+    # 0 is a value
+    #NU is massing value
+#----------
+    
+#What happens if you neglect the mutate() step? (mutate(names_from = stringr::str_replace(key, "newrel", "new_rel")))
+   who1 %>%
+      separate(key, c("new", "type"), sep = "_")  
+#-------
+    
+#I claimed that iso2 and iso3 were redundant with country. Confirm this claim.
+    who %>% 
+      count(country, iso2, iso3)
+#--------
+    
+#For each country, year, and sex compute the total number of cases of TB. Make an informative visualisation of the data.
+    who5 %>% 
+      filter(sex %in% "f") %>% 
+      ggplot(aes(x = year, y = country)) +
+      geom_tile(aes(fill = cases)) 
+    
+#--------
+    
+#------------------------------
+    
+#13.2.1 Exercises
+#Imagine you wanted to draw (approximately) the route each plane flies from its origin to its destination. What variables would you need? What tables would you need to combine?
+    #This requires the (flights, airports) tables. 
+    #The flights has (origin, dest).
+    #The airports  has (lon, lat)  
+#--------------
+    
+#I forgot to draw the relationship between weather and airports. What is the relationship and how should it appear in the diagram?
+  #column airports$faa is a foreign key of weather$origin
+    
+#weather only contains information for the origin (NYC) airports. If it contained weather records for all airports in the USA, what additional relation would it define with flights?
+      
+#We know that some days of the year are “special”, and fewer people than usual fly on them. How might you represent that data as a data frame? What would be the primary keys of that table? How would it connect to the existing tables?
+    
+    
