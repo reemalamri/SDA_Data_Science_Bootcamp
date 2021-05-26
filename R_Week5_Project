@@ -1,0 +1,96 @@
+#install.packages("ggpubr")
+library(DataExplorer)
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(scales)
+library(ggpubr)
+
+Walbrook_Wharf <- read.csv(file = "C:\\Users\\LENOVO\\Desktop\\SDA_DSB\\project5\\Walbrook_Wharf.csv")
+Mil_End_Road<- read.csv(file = "C:\\Users\\LENOVO\\Desktop\\SDA_DSB\\project5\\Mil_ End_Road.csv")
+Newham_Wren<-read.csv(file = "C:\\Users\\LENOVO\\Desktop\\SDA_DSB\\project5\\Newham_Wren Close.csv")
+North_Ken<-read.csv(file = "C:\\Users\\LENOVO\\Desktop\\SDA_DSB\\project5\\North_Ken.csv")
+
+df_all<-rbind(Walbrook_Wharf,Mil_End_Road,Newham_Wren,North_Ken)
+
+View(df_all)
+summary(df_all)
+
+# remove missing data 
+data_after_clean<-na.omit(df_all)
+View(data_after_clean)
+summary(data_after_clean)
+
+# convert Units from "mg m-3" to"ug m-3"
+unique(data_after_clean[c("Units")])
+data_after_clean[, "Value"] <- ifelse(data_after_clean[,"Units"]=="mg m-3", data_after_clean[,"Value"]*1000, data_after_clean[,"Value"])
+data_after_clean[, "Units"] <- ifelse(data_after_clean[,"Units"]=="mg m-3", "ug m-3", data_after_clean[,"Units"])
+
+# convert ReadingDataTime column from character to date 
+data_after_clean [,"ReadingDateTime"]<-as.Date(data_after_clean$ReadingDateTime,"%d/%m/%Y")
+
+
+#plot1 with all Site.
+p<-data_after_clean %>%
+  group_by(Site,Species) %>%
+  summarise(Value =mean(Value))%>%
+  ggplot() + 
+  geom_col(mapping = aes(x = Site,y= Value , fill = Species), position = "dodge")+
+scale_fill_manual(values=c("#165CAA","#276DC2","#BFC2C5"))
+p + scale_x_discrete(labels=c("CT6" = "Walbrook Wharf", "KC1" = "Mil_End_Road",
+                              "NM3" = "Newham_Wren", "TH2" = "North_Ken"))
+print("the graph show the compare pollution rates of CO,NO and NOX in four sites ")
+
+#plot2 with max Site CT6.
+plot_CO<-data_after_clean %>%
+  filter(Site =="CT6")%>%
+  ggplot()+
+  geom_col(mapping=aes(x =year(ReadingDateTime) ,y =Value ,fill = Species), position = "dodge")+
+  ggtitle("pollution rates in Walbrook Wharf per year")
+
+
+#the graph show the pollution rates of CO,NO, and NOX in Walbrook Wharf within a year
+#the graph show the pollution rates of CO in Walbrook Wharf within maxmim pollution year 2020
+#the graph show the pollution rates of CO in Walbrook Wharf within maxmim pollution  2020
+#plot3 with max site in max year and max Species show result in month.
+plot_CO1<-data_after_clean %>%
+  filter(Site =="CT6",year(ReadingDateTime)==2010,Species=="CO")%>%
+  ggplot()+
+  geom_col(mapping=aes(x =month(ReadingDateTime) ,y =Value ))+
+  ggtitle("CO pollution rates in Walbrook Wharf within 2010 per month")
+
+#plot3 with max site , max year and max Species in max month show result in day.
+plot_CO2<-data_after_clean %>%
+  filter(Site =="CT6",year(ReadingDateTime)==2010,month(ReadingDateTime)==1,Species=="CO")%>%
+  ggplot()+
+  geom_col(mapping=aes(x =day(ReadingDateTime) ,y =Value))+
+  ggtitle("CO pollution rates in Walbrook Wharf within 1/2010 per day")
+
+ggarrange(plot_CO,plot_CO1,plot_CO2 + rremove("x.text"), 
+          labels = c("A", "B", "C"),
+          ncol = 1, nrow = 3)
+
+
+#plot3
+data_after_clean %>%
+  group_by(Site,year(ReadingDateTime)) %>%
+  mutate(Value =mean(Value))%>%
+  ggplot(mapping= aes( x = year(ReadingDateTime),y = Value,color=Site))+
+  xlab("Years")+
+  geom_line()
+print("the graph show all pollution mean rates changed in the four sites over the 5 years")
+      
+#plot4
+data_after_clean %>%
+  filter(Site =="TH2")%>%
+  ggplot()+
+  geom_col(mapping=aes(x =year(ReadingDateTime) ,y =Value ,fill = Species), position = "dodge")+
+  scale_fill_manual(values=c("#165CAA","#276DC2","#BFC2C5"))+
+  xlab("Years")+
+  ggtitle("Pollution Rates in North_Ken per Year")
+print("In the fourth graph, we show the big change in the pollution of North_Ken over the 5 years. this graph reviews the changes in pollution of it with more detail over the 5 years.")
+
+
+
+
+
