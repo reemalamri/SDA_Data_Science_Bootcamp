@@ -1,0 +1,116 @@
+install.packages("nycflights13")
+library(tidyverse)
+library(nycflights13)
+diamonds
+summarise(diamonds)
+#-----------------------------------
+
+#7.3.4 Exercises
+#Explore the distribution of each of the x, y, and z variables in diamonds. What do you learn? 
+#Think about a diamond and how you might decide which dimension is the length, width, and depth.
+#------------
+#Explore the distribution of each of the x, y, and z variables in diamonds. What do you learn?
+#Think about a diamond and how you might decide which dimension is the length, width, and depth.
+  #x
+  ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = x), binwidth = 0.5)
+  #y
+  ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5)
+  #z
+  ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = z), binwidth = 0.5)
+  #summary
+  summary(diamonds)
+  #x close to normal distribution, while y and z no.
+  # z and y have outliers.
+  #most of y values between (2.5,5)
+  #x values between (3,10)
+  #most of z values between (2.5,10)
+  #I thank x and y are length and width, and z is depth.
+#------------
+  
+#Explore the distribution of price. Do you discover anything unusual or surprising?
+#(Hint: Carefully think about the binwidth and make sure you try a wide range of values.)
+  ggplot(diamonds) + 
+    geom_histogram(mapping = aes(x = price), binwidth = 20)
+  #when I make binwidth to 20 the chart becomes more clear.
+  # most of diamonds price  are less than 10000
+  # have empty value in 1500
+  
+#------------
+#How many diamonds are 0.99 carat? How many are 1 carat?
+  diamonds%>% 
+    filter(carat == 1) %>% 
+    count()
+  #1558
+  diamonds %>% 
+    filter(carat == 0.99)%>%
+    count()
+  #23
+#What do you think is the cause of the difference?
+  #may because the diamond is expensive so a little material have much more value.
+#------------
+  
+#Compare and contrast coord_cartesian() vs xlim() or ylim() when zooming in on a histogram. What happens if you leave binwidth unset?
+#What happens if you try and zoom so only half a bar shows?
+  ggplot(diamonds) +
+    geom_histogram(mapping = aes(x = price), binwidth = 20) +
+    coord_cartesian(xlim = c(0, 5000), ylim = c(0, 500))
+  #binwidth unset? cut part of chart
+  #data that are outside of the limits are shown
+  ggplot(data = diamonds) +
+    geom_histogram(mapping = aes(x = price), binwidth = 20) +
+    xlim(c(0,5000)) +
+    ylim(c(0,500))
+  #binwidth unset? don't see anything.
+  #data that are outside of the limits are not shown it missing.
+#------------
+  
+#-----------------------------------
+  
+#7.4.1 Exercises
+#What happens to missing values in a histogram?
+  diamonds2 <- diamonds %>%
+    mutate(y = ifelse(y < 3 | y > 20, NA, y))
+  
+  ggplot(diamonds2, aes(x = y)) +
+    geom_histogram()
+#What happens to missing values in a bar chart?
+  diamonds %>%
+    mutate(carrier = ifelse(cut > 7, NA, cut)) %>%
+    ggplot(aes(cut)) +
+    geom_bar()
+#Why is there a difference?
+  #geom_histogram removed rows with NA values.
+#------------  
+#What does na.rm = TRUE do in mean() and sum()?
+  mean(c(10, 10, 10, NA), na.rm = TRUE)
+  #10
+  sum(c(10, 10, 10, NA), na.rm = TRUE)
+  #30
+  #It ignores NA values
+#------------
+
+#-----------------------------------  
+
+#7.5.1.1 Exercises
+#Use what you’ve learned to improve the visualisation of the departure times of cancelled vs. non-cancelled flights.
+  nycflights13::flights %>%
+    mutate(
+      cancelled = is.na(dep_time),
+      sched_hour = sched_dep_time %/% 100,
+      sched_min = sched_dep_time %% 100,
+      sched_dep_time = sched_hour + sched_min / 60
+    ) %>%
+    ggplot() +
+    geom_boxplot(mapping = aes(y = sched_dep_time, x = cancelled))
+    geom_freqpoly(mapping = aes(colour = cancelled), binwidth = 1/4)
+#------------
+  
+  
+  
+  
+  
+#------------
+  
