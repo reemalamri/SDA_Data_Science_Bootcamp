@@ -1,0 +1,63 @@
+deck <- read.csv("https://s3.us-east-1.amazonaws.com/General_V88/boomyeah2015/codingdojo/curriculum/content/chapter/1618705129__deck.csv")
+
+View(deck)
+
+shuffle <- function(players, hand_size){
+  x <- players * hand_size # determine how many cards are needed
+  
+  # If else to determine if more than 52 cards are needed
+  if (x > 52){
+    
+    return(paste("Not enough cards to play"))
+    
+  }else{
+    
+    if(players == 2){# 2 players
+      cards <- sample(x=deck$X, size=x, replace=FALSE) # return a sample of the total needed cards
+      player1 <- deck[deck$X %in% cards[1:5],] # assign first 5 cards to player 1
+      player2 <- deck[deck$X %in% cards[6:10],] # assign last 5 cards to player 2
+      
+      
+      
+      sum1 <- sum( player1$value)
+      sum2 <- sum( player2$value)
+      if(sum1 > sum2){
+        sprintf("Player 1 has more points than Player 2. Player 1: %s, Player 2: %s ", sum1 ,sum2)
+      }else{
+        sprintf("Player 2 has more points than Player 1. Player 1: %s, Player 2: %s ", sum1 ,sum2)}
+      
+      }else if(players == 3){#3 players
+      cards <- sample(x=deck$X, size=x, replace=FALSE) # return a sample of the total needed cards
+      
+      player1 <- deck[deck$X %in% cards[1:5],] # assign first 5 cards to player 1
+      player2 <- deck[deck$X %in% cards[6:10],] # assign last 5 cards to player 2 
+      player3 <- deck[deck$X %in% cards[11:15],] # assign last 5 cards to player 3
+      
+      sum1 <- sum( player1$value)
+      sum2 <- sum( player2$value)
+      sum3 <- sum( player3$value)
+      
+      if((sum1 > sum2) & (sum1 > sum3)){
+        sprintf("Player 1 has more points than Player 2 and Player 3 . Player 1: %s, Player 2: %s, Player 3: %s ", sum1 ,sum2, sum3)
+      }else if((sum2 > sum1) & (sum2 > sum3)){
+        sprintf("Player 2 has more points than Player 1 and Player 3 . Player 1: %s, Player 2: %s, Player 3: %s ", sum1 ,sum2, sum3)
+      }else{
+        sprintf("Player 3 has more points than Player 1 and Player 2. Player 1: %s, Player 2: %s, Player 3: %s ", sum1 ,sum2, sum3)}
+      }else{
+        sprintf("only 2 or 3 Players")
+    }
+  }
+ 
+         
+    
+  }
+
+
+# 2 players
+
+shuffle(2,5)
+
+# 3 players
+
+shuffle(3,5)
+
