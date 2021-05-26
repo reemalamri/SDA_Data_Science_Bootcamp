@@ -1,0 +1,119 @@
+#Print all integers from 0 to 150
+for i in range(151):
+    print(i)
+
+#Print all the multiples of 5 from 5 to 1,000
+for i in range(5,1001,5):
+    print(i)
+
+#Print integers 1 to 100. If divisible by 5, print "Coding" instead. If divisible by 10, print "Coding Dojo"
+for i in range(1,101):
+    if(i%5==0):
+        print("i is",i,"Coding")
+    if(i%10==0):
+        print("i is",i,"Coding Dojo")
+        
+#Add odd integers from 0 to 500,000, and print the final sum
+sum=0
+for i in range(1,500001,2):
+    sum=sum+i
+
+print("sum of odd numbers in 0 to 500000 is",sum)
+#Print positive numbers starting at 2018, counting down by fours.
+for i in range(2018,0,-4):
+    print(i)
+
+#Flexible Counter (optional)
+lowNum=2
+highNum=9
+mult=3
+print("multiple of {} in {} to {} are".format(mult,lowNum,highNum))
+for i in range(lowNum,highNum+1):
+    if(i%mult==0):
+        print(i)
+####
+#Biggie Size
+def Biggie_Size(lst):
+    for i in range(len(lst)):
+        if lst[i]>0:
+            lst[i]="big"
+    return(lst)
+
+print(Biggie_Size([1,2,-3,4,-1]))
+        
+#Count Positives
+def Count_Positives(lst):
+    count=0
+    for i in range(len(lst)):
+        if lst[i]>0:
+            count=count+1
+    lst[-1]=count
+    return(lst)
+
+print(Count_Positives([1,6,-4,-2,-7,-2])) 
+        
+#Sum Total 
+def Sum_Total(lst):
+    sum=0
+    for i in lst:
+        sum=sum+i
+    return(sum)
+print("sum is",Sum_Total([1,2,3,4]))
+
+#Average 
+def Average(lst):
+    sum=0
+    for i in lst:
+        sum=sum+i
+    return(sum/len(lst))
+    
+print("average is ",Average([1,2,3,4]))
+
+#Minimum
+def Minimum(lst):
+    if lst==[]:
+        return("False")
+    else:
+        return(min(lst))
+
+print("Minimum is ",Minimum([37,2,1,-9]))
+print("Minimum is ",Minimum([]))
+
+
+#Maximum 
+def Maximum(lst):
+    if lst==[]:
+        return("False")
+    else:
+        return(max(lst))
+
+print("Maximum is ",Maximum([37,2,1,-9]))
+print("Maximum is ",Maximum([]))   
+
+#Ultimate Analysis (Optional)
+
+def Ultimate_Analysis(lst):
+    return ({'sumTotal': sum(lst), 'average': sum(lst)/len(lst), 'minimum': min(lst), 'maximum': max(lst), 'length': len(lst) })
+print(Ultimate_Analysis([37,2,1,-9]))
+
+#Reverse List (Optional)
+def Reverse_List(lst):
+    return(lst[::-1])
+print(Reverse_List([37,2,1,-9]))
+#####
+def Selection_Sort(arr):
+    index=0
+    mine=0
+    for i in range(len(arr)):
+        mine=max(arr)
+        for x in range(i,len(arr)):
+            if arr[x] <= mine:
+                mine=arr[x]
+                index=x
+        arr[i],arr[index]=arr[index],arr[i]
+        print(arr)
+       
+    return(arr)
+
+arr=[5,8,1,6,4,3,7,9,2]
+print(Selection_Sort(arr))
