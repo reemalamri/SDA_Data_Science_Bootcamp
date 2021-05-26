@@ -1,0 +1,41 @@
+library(shiny)
+library(tidyverse)
+library(nycflights13)
+library(shiny)
+library(DataExplorer)
+#unique(planes$manufacturer)
+
+
+ui <- fluidPage(
+  sliderInput(inputId="num", # set unique id
+              label="Choose start value", # choose label to display to user
+              value=1, # set preset value
+              min=1, # set min Year
+              max=100), # set max Year
+  sliderInput(inputId="num2", 
+              label="Choose end value ", 
+              value=1, 
+              min=1, 
+              max=100),
+  plotOutput("r_eq"),
+  plotOutput("s_eq"),
+)
+
+server <- function(input, output) {
+  output$r_eq <- renderPlot({
+    title <- "Root Function x^0.5"
+    root_equation = function(x){
+        x^0.5}
+    plot(root_equation(input$num:input$num2), type='l',main=title)
+  
+  })
+  output$s_eq <- renderPlot({
+    title <- "Quadratic Function x*x"
+    s_equation = function(x){
+      x*x}
+    plot(s_equation(input$num:input$num2), type='l',main=title)
+    
+  })
+}
+
+shinyApp(ui=ui, server=server)
