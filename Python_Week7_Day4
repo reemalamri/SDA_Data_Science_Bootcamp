@@ -1,0 +1,22 @@
+#my packge
+pip install -i https://test.pypi.org/simple/ ListR-pkg-reem-alamri==0.0.1
+
+#import class
+from ListR import MyClass
+
+#create random list
+import random
+test_ls= [random.randint(-100,100) for x in range(10)]
+
+
+#create object from MyClass
+test = MyClass(test_ls)
+
+print("list length",test.return_length())
+print("sort list Des",test.return_sort_Des())
+print("sort list Asc",test.return_sort_Asc())
+print("max number",test.return_max())
+print("squared of max number",test.return_max_squared())
+print("min number",test.return_min())
+print("sum of negative number",test.return_negative_sum())
+print("sum of positive number",test.return_positive_sum())
