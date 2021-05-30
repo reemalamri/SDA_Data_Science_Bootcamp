@@ -1,0 +1,106 @@
+# Put your code into a function that is easily callable.
+# Comment your code to make it more readable.
+# Think about what days are the busiest at real theaters and reflect that in your code.
+# Add time and the ability to show multiple movies on the same screen each day versus showing one movie on one screen each day.
+
+from collections import Counter
+import numpy as np
+import random
+import matplotlib.pyplot as plt
+plt.style.use("seaborn")
+
+def revenue_and_visitors(ticket_cost_adults = 15,ticket_cost_child = 5,ticket_cost_senior_citizens= 10,seats = 30):
+    """
+    Calculate revenue and busiest of the theater in week
+     
+     int ticket_cost_adults = cost of adults ticket.
+     int ticket_cost_child = cost of child ticket.
+     int ticket_cost_adults = cost of adults ticket.
+     int seats = number of seats in the screens.
+    
+    """
+    week_days_revenue = {"Saturday":0, "Sunday":0, "Tuesday":0, "Wednesday":0, "Thursday":0, "Friday":0}# Store totals revenue for each day
+    week_days_visitors = {"Saturday":0, "Sunday":0, "Tuesday":0, "Wednesday":0, "Thursday":0, "Friday":0}# Store totals visitors for each day
+    screens = 5 # How many screens does the theater have? (assume 1 per movie)
+    revenue_per_day = np.repeat(0, len(week_days_revenue))
+    
+       # iterate through the week
+    for day in week_days_revenue:
+        #If it is Friday then there should be a 10% discount on senior citizen ticket costs.
+        if (week_days_revenue[day] == "Friday"):
+            ticket_cost_senior_citizens=ticket_cost_senior_citizens -(ticket_cost_senior_citizens * 0.1) 
+        
+        screens_revenue = np.repeat(0, screens)#store revenue per day 
+        screens_visitors = np.repeat(0, screens)#store pepole per day 
+        
+      # iterate through the amount of screens on a particular day
+        for screen in range(screens):
+            
+            #iterate through multiple movies on the same screen each day.
+            for i in range(1,3):
+                # Calculate  how many adults, children and senior citizens are watching the movie
+                visitors_adults = np.random.randint(0,seats)
+                visitors_children = np.random.randint(0,(seats-visitors_adults))
+                senior_citizens =  np.random.randint(0,(seats-visitors_adults-visitors_children))
+
+                # Calculate the revenue for adults, children and senior_citizens.
+                adults_revenue = visitors_adults * ticket_cost_adults
+                children_revenue = visitors_children * ticket_cost_child
+                senior_citizens_revenue= senior_citizens*ticket_cost_senior_citizens
+
+                # Calculate revenue and visitor then add to running total for the day
+                screens_revenue[screen] += (adults_revenue + children_revenue + senior_citizens_revenue)
+                screens_visitors[screen] += (visitors_adults+visitors_children+senior_citizens)
+                
+        #Save total to the corresponding day
+        week_days_revenue[day]=sum(screens_revenue)
+        week_days_visitors[day]=sum(screens_visitors)
+        
+    return week_days_revenue,week_days_visitors
+
+def simulation_frequently( sample=1000):
+    """
+    Calculate revenue and busiest of the theater frequently
+    int sample = Number of frequently.
+    """
+    week_days = {"Saturday":0, "Sunday":0, "Tuesday":0, "Wednesday":0, "Thursday":0, "Friday":0}# save total revenue
+    week_days_visitors = {"Saturday":0, "Sunday":0, "Tuesday":0, "Wednesday":0, "Thursday":0, "Friday":0}#save total visitors 
+    
+    # iterate through frequently number.
+    for i in range(sample):
+        result= revenue_and_visitors() #call function
+        week_days= dict(Counter(week_days)+Counter(result[0])) #increment total revenue by return of functin. 
+        week_days_visitors= dict(Counter(week_days_visitors)+Counter(result[1])) #increment total visitors by return of functin. 
+        
+    return week_days,week_days_visitors
+
+def get_max_graph(week_days):
+    """
+    Find the max of revenue and the busiest day.
+    
+    tuple week_days= has dectionry of revenue and dectionry of visitors in each day.
+    """
+    #plot revenue.
+    plt.plot(range(len(week_days[0])), list(week_days[0].values()))
+    plt.xticks(range(len(week_days[0])), list(week_days[0].keys()))
+    plt.title("The Revenues of Week ")
+    plt.show()
+    
+    max_value_revenue = max(week_days[0].values())#find max revenue
+    max_key_revenue = max(week_days[0], key=week_days[0].get)#find max revenue day
+    print("The",max_key_revenue,"have max revenue of week with $:",max_value_revenue)
+    
+    #plot visitors.
+    plt.plot(range(len(week_days[1])), list(week_days[1].values()))
+    plt.xticks(range(len(week_days[1])), list(week_days[1].keys()))
+    plt.title("The Visitors of Week ")
+    plt.show()
+    
+    max_value_visitors = max(week_days[1].values())#find max visitors
+    max_key_visitors = max(week_days[1], key=week_days[1].get)#find max visitors day
+    print("The",max_key_visitors,"is busiest day of week with :",max_value_visitors,"visitors")
+
+
+# call functions
+week_days= simulation_frequently()
+get_max_graph(week_days)
