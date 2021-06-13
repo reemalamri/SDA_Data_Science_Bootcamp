@@ -1,0 +1,431 @@
+pip install jupyter-dash -q
+
+pip install dash-cytoscape -q
+
+from jupyter_dash import JupyterDash  # pip install dash
+import dash_cytoscape as cyto  # pip install dash-cytoscape==0.2.0 or higher
+import dash_html_components as html
+import dash_core_components as dcc
+from dash.dependencies import Output, Input
+import pandas as pd  # pip install pandas
+import plotly.express as px
+import math
+import dash
+from dash import no_update
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns 
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+from dash.exceptions import PreventUpdate
+
+
+#external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = JupyterDash(__name__, )#external_stylesheets=external_stylesheets)
+
+df = pd.read_csv("/content/Life Expectancy Data.csv") 
+#missing value
+df['Adult Mortality'] = df.groupby('Country')['Adult Mortality'].apply(lambda x: x.fillna(x.mean()))
+df['Adult Mortality'] = df['Adult Mortality'].fillna(df['Adult Mortality'].mean())
+df['Life expectancy '] = df.groupby('Country')['Life expectancy '].apply(lambda x: x.fillna(x.mean()))
+df['Life expectancy '] = df['Life expectancy '].fillna(df['Life expectancy '].mean())
+df['Population'] = df.groupby('Country')['Population'].apply(lambda x: x.fillna(x.mean()))
+df['Population'] = df['Population'].fillna(df['Population'].mean())
+df['GDP'] = df.groupby('Country')['GDP'].apply(lambda x: x.fillna(x.mean()))
+df['GDP'] = df['GDP'].fillna(df['GDP'].mean())
+df['Total expenditure'] = df.groupby('Country')['Total expenditure'].apply(lambda x: x.fillna(x.mean()))
+df['Total expenditure'] = df['Total expenditure'].fillna(df['Total expenditure'].mean())
+df['Income composition of resources'] = df.groupby('Country')['Income composition of resources'].apply(lambda x: x.fillna(x.mean()))
+df['Income composition of resources'] = df['Income composition of resources'].fillna(df['Income composition of resources'].mean())
+df[' thinness  1-19 years'] = df.groupby('Country')[' thinness  1-19 years'].apply(lambda x: x.fillna(x.mean()))
+df[' thinness  1-19 years'] = df[' thinness  1-19 years'].fillna(df[' thinness  1-19 years'].mean())
+df[' thinness 5-9 years'] = df.groupby('Country')[' thinness 5-9 years'].apply(lambda x: x.fillna(x.mean()))
+df[' thinness 5-9 years'] = df[' thinness 5-9 years'].fillna(df[' thinness 5-9 years'].mean())
+df[' BMI '] = df.groupby('Country')[' BMI '].apply(lambda x: x.fillna(x.mean()))
+df[' BMI '] = df[' BMI '].fillna(df[' BMI '].mean())
+df['Alcohol'] = df.groupby('Country')['Alcohol'].apply(lambda x: x.fillna(x.mean()))
+df['Alcohol'] = df['Alcohol'].fillna(df['Alcohol'].mean())
+df['Hepatitis B'] = df.groupby('Country')['Hepatitis B'].apply(lambda x: x.fillna(x.mean()))
+df['Hepatitis B'] = df['Hepatitis B'].fillna(df['Hepatitis B'].mean())
+df['Polio'] = df.groupby('Country')['Polio'].apply(lambda x: x.fillna(x.mean()))
+df['Polio'] = df['Polio'].fillna(df['Polio'].mean())
+
+df[' thinness under 19 years'] =(df[' thinness  1-19 years'] +df[' thinness 5-9 years'])/2
+df['Adult Mortality']=abs(df['Adult Mortality']*(df['Population']/1000))
+df['infant deaths']=abs(df['infant deaths']*(df['Population']/1000))
+df['under-five deaths ']=abs(df['under-five deaths ']*(df['Population']/1000))
+
+all_Countries = df.Country.unique()
+all_Countries= np.append(all_Countries, 'All')
+app.layout = html.Div([
+    # Title
+    html.H1("The Factors Influencing Life Expectancy"),
+    html.Label([
+        "Countries:",
+        dcc.Dropdown(
+            id="Dropdown",
+            options = [{"label":x, "value":x} for x in all_Countries],
+            value="All",
+            placeholder="Select a Country",
+            )
+    ]),
+    html.H3("Affecting Number of Deaths on life expectancy"),
+     html.Label([
+       # "Age group:",
+        dcc.RadioItems(
+            id="RadioItems",
+            options=[
+                {'label': 'Adult deaths', 'value': 'Adult Mortality'},
+                {'label': 'Under-five deaths ', 'value': 'under-five deaths '},
+                {'label': 'Infant deaths', 'value': 'infant deaths'},
+                {'label': 'Total', 'value': 'total'}
+            ],
+            value='total',
+            labelStyle={'display': 'inline-block'}
+)  
+    ]),
+    # Line Break
+    html.Br([]), 
+    dcc.Graph(id="graph"),
+    html.Div([
+     html.H3("Affecting Economical factors  on life expectancy"),
+     html.Label([
+        dcc.RadioItems(
+            id="RadioItems1",
+            options=[{'label':'GDP', "value":"GDP"},
+               {'label':'percentage expenditure', "value":"percentage expenditure"},
+               {'label':'Total expenditure' ,"value":"Total expenditure"},
+               {'label':'Income composition of resources' ,"value":"Income composition of resources"},
+               ],
+            value='GDP',
+
+            labelStyle={'display': 'inline-block'})  
+    ]),
+    # Line Break
+    html.Br([]), 
+    dcc.Graph(id="graph1"),
+    html.Br([]), 
+   ]), 
+    html.H3("Affecting Social factors  on life expectancy"),
+    html.Label([
+      dcc.RadioItems(
+          id="RadioItems2",
+          options=[{'label':' BMI ', "value":' BMI '},
+              {'label':'Alcohol', "value":'Alcohol'},
+              {'label':' thinness under 19 years' ,'value':' thinness under 19 years'},
+              ],
+          value=' BMI ',
+
+          labelStyle={'display': 'inline-block'})  
+  ]),
+    # Line Break
+    html.Br([]), 
+    dcc.Graph(id="graph2"),
+    html.Br([]), 
+    html.H3("Affecting Immunization Factors on life expectancy"),
+    html.Label([
+      dcc.RadioItems(
+          id="RadioItems3",
+          options=[
+          {'label': 'Hepatitis B', 'value': 'Hepatitis B'},
+          {'label': 'Polio', 'value': 'Polio'},],
+          value='Hepatitis B',
+
+          labelStyle={'display': 'inline-block'})  
+  ]),
+  # Line Break
+  html.Br([]), 
+  dcc.Graph(id="graph3"),
+           
+])
+@app.callback(
+     Output('graph', 'figure'),
+     Input('Dropdown', 'value'),
+     Input('RadioItems', 'value'),
+ )
+def update_figure(val_Country,value):
+  if val_Country is None:
+      raise dash.exceptions.PreventUpdate
+  if (val_Country=='All'):
+      df1=df.groupby('Year')['Adult Mortality','infant deaths','under-five deaths ','Life expectancy '].agg(
+          {'Adult Mortality':'sum', 'infant deaths':'sum','under-five deaths ':'sum','Life expectancy ':'mean'}).astype(int).reset_index()
+      df1['total deaths']=abs((df1['Adult Mortality']+df1['infant deaths']+df1['under-five deaths ']).astype(int))
+      fig = make_subplots(specs=[[{"secondary_y": True}]])# Create figure with secondary y-axis
+      # Add traces
+      fig.add_trace(
+      go.Line(x=df1['Year'], y=df1['Life expectancy '], name="Life expectancy"),secondary_y=True)
+      fig.update_xaxes(title_text="Years")# Set y-axes titles
+      fig.update_yaxes(title_text="<b>Life expectancy</b>", secondary_y=True)
+      
+      if (value=='total'):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1['total deaths'], name="total deaths"),secondary_y=False)
+          # Add figure title
+          fig.update_layout(title_text="Total Deaths in all Countries per Year")
+          # Set x-axis title
+          fig.update_yaxes(title_text="<b>deaths</b>", secondary_y=False)
+          
+      elif (value=='Adult Mortality'):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1['Adult Mortality'], name="Adult deaths"),secondary_y=False)
+          fig.update_layout(title_text="Adult Deaths in all Countries per Year")
+          fig.update_yaxes(title_text="<b>Adult deaths</b>", secondary_y=False)
+          
+      elif (value=='infant deaths'):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1['infant deaths'], name="Infant deaths"),secondary_y=False)
+          fig.update_layout(title_text="Infant Deaths in all Countries per Year")
+          fig.update_yaxes(title_text="<b>Infant deaths</b>", secondary_y=False)
+          
+      elif (value=='under-five deaths '):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1['under-five deaths '], name="Under-five deaths"),secondary_y=False)
+          fig.update_layout(title_text="Under-five Deaths in all Countries per Year")
+          fig.update_yaxes(title_text="<b>under-five deaths</b>", secondary_y=False) 
+          
+      return fig
+
+  else:
+      df1=df.groupby(['Country','Year'])['Adult Mortality','infant deaths','under-five deaths ','Life expectancy '].agg(
+          {'Adult Mortality':'sum', 'infant deaths':'sum','under-five deaths ':'sum','Life expectancy ':'mean'}).astype(int).reset_index()
+      df1=df1[df1['Country']==val_Country]
+      df1['total deaths']=abs((df1['Adult Mortality']+df1['infant deaths']+df1['under-five deaths ']).astype(int))
+      fig = make_subplots(specs=[[{"secondary_y": True}]])# Create figure with secondary y-axis
+      fig.add_trace(# Add traces
+      go.Line(x=df1['Year'], y=df1['Life expectancy '], name="Life expectancy"),secondary_y=True)
+      fig.update_xaxes(title_text="Years")# Set y-axes titles
+      fig.update_yaxes(title_text="<b>Life expectancy</b>", secondary_y=True)
+      
+      if (value=='total'):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1['total deaths'], name="total deaths"),secondary_y=False)
+          fig.update_layout(title_text='Total Deaths in %s per Year' %val_Country)
+          fig.update_yaxes(title_text="<b>deaths</b>", secondary_y=False)
+          
+      elif (value=='Adult Mortality'):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1['Adult Mortality'], name="Adult deaths"),secondary_y=False)
+          fig.update_layout(title_text='Adult Deaths in %s per Year' %val_Country)
+          fig.update_yaxes(title_text="<b>Adult deaths</b>", secondary_y=False)
+          
+      elif (value=='infant deaths'):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1['infant deaths'], name="Infant deaths"),secondary_y=False)
+          fig.update_layout(title_text='Adult Deaths in %s per Year' %val_Country)
+          fig.update_yaxes(title_text="<b>Infant deaths</b>", secondary_y=False)
+          
+      elif (value=='under-five deaths '):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1['under-five deaths '], name="Under-five deaths "),secondary_y=False)
+          fig.update_layout(title_text='Adult Deaths in %s per Year' %val_Country)
+          fig.update_yaxes(title_text="<b>Under-five deaths </b>", secondary_y=False)
+          
+      return fig
+
+
+@app.callback(
+     Output('graph1', 'figure'),
+     Input('Dropdown', 'value'),
+     Input('RadioItems1', 'value'),
+ )
+def update_figure3(val_Country,value):
+  if val_Country is None:
+    raise dash.exceptions.PreventUpdate
+  if (val_Country=='All'):
+    df1=df.groupby('Year')['GDP','percentage expenditure','Total expenditure','Income composition of resources','Life expectancy '].mean().reset_index()
+        
+    fig = make_subplots(specs=[[{"secondary_y": True}]])# Create figure with secondary y-axis
+        # Add traces
+    fig.add_trace(
+    go.Line(x=df1['Year'], y=df1['Life expectancy '], name="Life expectancy"),secondary_y=True)
+    fig.update_xaxes(title_text="Years")# Set y-axes titles
+    fig.update_yaxes(title_text="<b>Life expectancy</b>", secondary_y=True)
+    fig.update_xaxes(ticktext=df1['Year'].unique(),
+                     tickvals=df1['Year'].unique())
+    if (value=='GDP'):
+        fig.add_trace(go.Bar(x=df1['Year'], y=df1['GDP'],name="GDP"),secondary_y=False)
+        # Add figure title
+        fig.update_layout(title_text="Gross Domestic Product per capita (in USD) per years")
+        # Set x-axis title
+        fig.update_yaxes(title_text="<b>GDP</b>", secondary_y=False)
+            
+    elif (value=='percentage expenditure'):
+        fig.add_trace(go.Bar(x=df1['Year'], y=df1['percentage expenditure'],name="percentage expenditure"),secondary_y=False)
+        fig.update_layout(title_text="Expenditure on health Gross Domestic Product per capita per years")
+        fig.update_yaxes(title_text="<b>percentage expenditure</b>", secondary_y=False)
+    elif (value=='Total expenditure'):
+        fig.add_trace(go.Bar(x=df1['Year'], y=df1['Total expenditure']),secondary_y=False)
+        fig.update_layout(title_text="General government expenditure  on healthe per years")
+        fig.update_yaxes(title_text="<b>Total expenditure</b>", secondary_y=False)
+        
+    elif (value=='Income composition of resources'):
+        fig.add_trace(go.Bar(x=df1['Year'], y=df1['Income composition of resources'],name='Income composition of resources'),secondary_y=False)
+        fig.update_layout(title_text="Human Development Index per years")
+        fig.update_yaxes(title_text="<b>Income composition of resources</b>", secondary_y=False) 
+        
+    return fig
+  else:
+    df1=df.groupby(['Country','Year'])['GDP','percentage expenditure','Total expenditure','Income composition of resources','Life expectancy '].mean().reset_index()
+    df1=df1[df1['Country']==val_Country]
+    
+    fig = make_subplots(specs=[[{"secondary_y": True}]])# Create figure with secondary y-axis
+    fig.add_trace(# Add traces
+    go.Line(x=df1['Year'], y=df1['Life expectancy '], name="Life expectancy"),secondary_y=True)
+    fig.update_xaxes(title_text="Years")# Set y-axes titles
+    fig.update_yaxes(title_text="<b>Life expectancy</b>", secondary_y=True)
+    fig.update_xaxes(ticktext=df1['Year'].unique(),
+                          tickvals=df1['Year'].unique())
+    if (value=='GDP'):
+            fig.add_trace(go.Bar(x=df1['Year'], y=df1['GDP'],name='GDP'),secondary_y=False)
+            # Add figure title
+            fig.update_layout(title_text="Gross Domestic Product per capita (in USD)in %s per years" %val_Country)
+            # Set x-axis title
+            fig.update_yaxes(title_text="<b>GDP</b>", secondary_y=False)
+            
+    elif (value=='percentage expenditure'):
+        fig.add_trace(go.Bar(x=df1['Year'], y=df1['percentage expenditure'],name='percentage expenditure'),secondary_y=False)
+        fig.update_layout(title_text="Expenditure on health Gross Domestic Product in %s per capita per years" %val_Country)
+        fig.update_yaxes(title_text="<b>percentage expenditure</b>", secondary_y=False)
+    elif (value=='Total expenditure'):
+        fig.add_trace(go.Bar(x=df1['Year'], y=df1['Total expenditure'],name='Total expenditure'),secondary_y=False)
+        fig.update_layout(title_text="General government expenditure  on healthe in %s per years" %val_Country)
+        fig.update_yaxes(title_text="<b>Total expenditure</b>", secondary_y=False)
+        
+    elif (value=='Income composition of resources'):
+        fig.add_trace(go.Bar(x=df1['Year'], y=df1['Income composition of resources'], name='Income composition of resources'),secondary_y=False)
+        fig.update_layout(title_text="Human Development Index in %s per years" %val_Country)
+        fig.update_yaxes(title_text="<b>Income composition of resources</b>", secondary_y=False) 
+        
+    return fig
+@app.callback(
+     Output('graph2', 'figure'),
+     Input('Dropdown', 'value'),
+     Input('RadioItems2', 'value')
+ )
+
+def update_figure2(val_Country,value):
+  if val_Country is None:
+      raise dash.exceptions.PreventUpdate
+  if (val_Country=='All'):
+      df1=df.groupby('Year')[' BMI ','Alcohol',' thinness under 19 years','Life expectancy '].mean().reset_index()
+      fig = make_subplots(specs=[[{"secondary_y": True}]])# Create figure with secondary y-axis
+      # Add traces
+      fig.add_trace(
+      go.Line(x=df1['Year'], y=df1['Life expectancy '], name="Life expectancy"),secondary_y=True)
+      fig.update_xaxes(title_text="Years")# Set y-axes titles
+      fig.update_yaxes(title_text="<b>Life expectancy</b>", secondary_y=True)
+      fig.update_xaxes(ticktext=df1['Year'].unique(),
+                              tickvals=df1['Year'].unique())
+
+      
+      if (value==' BMI '):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1[' BMI '],name=' BMI '),secondary_y=False)
+          # Add figure title
+          fig.update_layout(title_text="Average Body Mass Index of entire population per years")
+          # Set x-axis title
+          fig.update_yaxes(title_text="<b> BMI </b>", secondary_y=False)
+          
+      elif (value=='Alcohol'):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1['Alcohol'],name='Alcohol'),secondary_y=False)
+          fig.update_layout(title_text="Alcohol recorded per capita (15+) consumption per years")
+          fig.update_yaxes(title_text="<b>Alcohol</b>", secondary_y=False)
+          
+      elif (value==' thinness under 19 years'):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1[' thinness under 19 years'],name=' thinness under 19 years'),secondary_y=False)
+          fig.update_layout(title_text="Prevalence of thinness among children and adolescents under 19 ")
+          fig.update_yaxes(title_text="<b> thinness under 19 years</b>", secondary_y=False)
+          
+          
+      return fig
+
+  else:
+      df1=df.groupby(['Country','Year'])[' BMI ','Alcohol',' thinness under 19 years','Life expectancy '].mean().reset_index()
+      df1=df1[df1['Country']==val_Country]
+      
+      fig = make_subplots(specs=[[{"secondary_y": True}]])# Create figure with secondary y-axis
+      fig.add_trace(# Add traces
+      go.Line(x=df1['Year'], y=df1['Life expectancy '], name="Life expectancy"),secondary_y=True)
+      fig.update_xaxes(title_text="Years")# Set y-axes titles
+      fig.update_yaxes(title_text="<b>Life expectancy</b>", secondary_y=True)
+      fig.update_xaxes(ticktext=df1['Year'].unique(),
+                            tickvals=df1['Year'].unique())
+
+
+
+      if (value==' BMI '):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1[' BMI '],name=' BMI '),secondary_y=False)
+          # Add figure title
+          fig.update_layout(title_text="Average Body Mass Index of entire population in %s per years" %val_Country)
+          # Set x-axis title
+          fig.update_yaxes(title_text="<b> BMI </b>", secondary_y=False)
+          
+      elif (value=='Alcohol'):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1['Alcohol'],name='Alcohol'),secondary_y=False)
+          fig.update_layout(title_text="Alcohol recorded per capita (15+) consumption in %s per years" %val_Country)
+          fig.update_yaxes(title_text="<b>Alcohol</b>", secondary_y=False)
+          
+      elif (value==' thinness under 19 years'):
+          fig.add_trace(go.Line(x=df1['Year'], y=df1[' thinness under 19 years'],name=' thinness under 19 years'),secondary_y=False)
+          fig.update_layout(title_text="Prevalence of thinness under 19 in %s per years" %val_Country)
+          fig.update_yaxes(title_text="<b> thinness under 19 years</b>", secondary_y=False)
+          
+      return fig
+
+@app.callback(
+     Output('graph3', 'figure'),
+     Input('Dropdown', 'value'),
+     Input('RadioItems3', 'value')
+ )
+def update_figure3(val_Country,value):
+    if val_Country is None:
+        raise dash.exceptions.PreventUpdate
+    if (val_Country=='All'):
+        df1=df.groupby('Year')['Hepatitis B','Polio','Life expectancy '].mean().reset_index()
+        fig = make_subplots(specs=[[{"secondary_y": True}]])# Create figure with secondary y-axis
+        # Add traces
+        fig.add_trace(
+        go.Line(x=df1['Year'], y=df1['Life expectancy '], name="Life expectancy"),secondary_y=True)
+        fig.update_xaxes(title_text="Years")# Set y-axes titles
+        fig.update_yaxes(title_text="<b>Life expectancy</b>", secondary_y=True)
+        fig.update_xaxes(ticktext=df1['Year'].unique(),
+                             tickvals=df1['Year'].unique())
+
+        
+        if (value=='Hepatitis B'):
+            fig.add_trace(go.Bar(x=df1['Year'], y=df1['Hepatitis B'],name='Hepatitis B'),secondary_y=False)
+            # Add figure title
+            fig.update_layout(title_text="Hepatitis B (HepB) immunization coverage among 1-year-olds (%)")
+            # Set x-axis title
+            fig.update_yaxes(title_text="<b>Hepatitis B</b>", secondary_y=False)
+            
+        elif (value=='Polio'):
+            fig.add_trace(go.Bar(x=df1['Year'], y=df1['Polio'],name='Polio'),secondary_y=False)
+            fig.update_layout(title_text="Polio (Pol3) immunization coverage among 1-year-olds (%)")
+            fig.update_yaxes(title_text="<b>Polio</b>", secondary_y=False)
+            
+            
+        return fig
+
+    else:
+        df1=df.groupby(['Country','Year'])['Hepatitis B','Polio','Life expectancy '].mean().reset_index()
+        df1=df1[df1['Country']==val_Country]
+        fig = make_subplots(specs=[[{"secondary_y": True}]])# Create figure with secondary y-axis
+        # Add traces
+        fig.add_trace(
+        go.Line(x=df1['Year'], y=df1['Life expectancy '], name="Life expectancy"),secondary_y=True)
+        fig.update_xaxes(title_text="Years")# Set y-axes titles
+        fig.update_yaxes(title_text="<b>Life expectancy</b>", secondary_y=True)
+        fig.update_xaxes(ticktext=df1['Year'].unique(),
+                             tickvals=df1['Year'].unique())
+
+        
+        if (value=='Hepatitis B'):
+            fig.add_trace(go.Bar(x=df1['Year'], y=df1['Hepatitis B'],name='Hepatitis B'),secondary_y=False)
+            # Add figure title
+            fig.update_layout(title_text="Hepatitis B (HepB) immunization coverage among 1-year-olds (%) in")
+            # Set x-axis title
+            fig.update_yaxes(title_text="<b>Hepatitis B</b>", secondary_y=False)
+            
+        elif (value=='Polio'):
+            fig.add_trace(go.Bar(x=df1['Year'], y=df1['Polio'],name='Polio'),secondary_y=False)
+            fig.update_layout(title_text="Polio (Pol3) immunization coverage among 1-year-olds (%)")
+            fig.update_yaxes(title_text="<b>Polio</b>", secondary_y=False)
+            
+            
+        return fig
+
+
+app.run_server(mode='external')
